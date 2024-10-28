@@ -1,42 +1,66 @@
 #include <iostream>
 #include <string>
-#include <vector>
+#include <array>
 #include <thread>
 
 class telematic
+
 {
 private:
     /* data */
-    double latitude;
-    double longitude;
+    int canIn_vehicleSpeed;
+    int canIn_fuelConsumption;
+    int canIn_latitude;
+    int canIn_longitude;
+
+    std::array<int,4> out_res;
+
 public:
-    //default constructor, here we are using static data but in real-time we will use gps sensor data 
+    //default constructor, here we are using static data but in real-time we will use sensor data 
 
     telematic(){
-        latitude=12390930;
-        longitude=923489821;
+        canIn_vehicleSpeed=100;
+        canIn_fuelConsumption=500;
+        canIn_latitude=1239;
+        canIn_longitude=9234;
     }
     
-    /* this senGPSToServer() function will send the location data from vehicle to the server or other vehicle we can use
-    various communication model for it to send data */
+    /* this send1ECUto2ECU() function will send the location data from 1 euc to another ecu */
 
-    std::vector<double> senGPSToServer(){
-        std::vector<double> res;
-        res.push_back(latitude);
-        res.push_back(longitude);
+    std::array<int,4> send1ECUto2ECU(){
 
-        return res;
+        out_res[0] = canIn_vehicleSpeed;
+        out_res[1] = canIn_fuelConsumption;
+        out_res[2] = canIn_latitude;
+        out_res[3] = canIn_longitude;
+
+        return out_res;
+    }
+
+    /* here vehicleSpeedCalibration is a calibration variable.
+    this function will basically check that speed is within the threshold or not and display 
+    message accordingly */
+
+    void CheckingSpeedIsInThresholdOrNot(double vehicleSpeedCalibration){
+
+        if(canIn_vehicleSpeed> vehicleSpeedCalibration){
+            std::cout<<"Warning: Vehicle speed "<<canIn_vehicleSpeed<<"km/h exceeds the calibration threshold "<<vehicleSpeedCalibration<<"km/h\n";
+        }
+        else{
+            std::cout<<"Vehicle speed is within the safe threshold.\n";
+        }
+     
     }
     
-    /* trackVehicle() function will display location of the car after every 10 seconds new location will be send as per 
-    sensor data which is sensed by the GPS sensor but here we are using staic data so same location will be shown everytime */
+    /* trackVehicle() function will display data of the car */
 
     void trackVehicle(){
-        while(true){
-            std::cout<<"Location of the car is --Latitude: "<<latitude<<" and longitude: "<<longitude<<"\n";
+            std::cout<<"Location of the car is --Latitude: "<<canIn_latitude<<" and longitude: "<<canIn_longitude<<"\n";
 
-            std::this_thread::sleep_for(std::chrono::seconds(10));
-        }
+            std::cout<<"Speed of the car is "<<canIn_vehicleSpeed<<"\n";
+
+            std::cout<<"Fuel Consumption of the car is "<<canIn_fuelConsumption<<"\n";
+
     }
     
 };
@@ -47,4 +71,7 @@ int main(){
     telematic ecu;     //object of telematic class
 
     ecu.trackVehicle();  //calling trackVehicle() function
+    ecu.CheckingSpeedIsInThresholdOrNot(120);
 }
+
+
